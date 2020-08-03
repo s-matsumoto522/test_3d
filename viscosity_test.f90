@@ -5,6 +5,7 @@ module viscosity_test
     integer, parameter :: NYmin = -80, NYmax = 80     !y方向の計算領域の形状
     integer, parameter :: NZmin = -80, NZmax = 80     !z方向の計算領域の形状
     double precision, parameter :: Xmax = 2.0d0*pi, Ymax = 2.0d0*pi, Zmax = 2.0d0*pi  !各方向の計算領域の最大値
+    double precision, parameter :: NU = 1.0d0       !動粘性係数
     double precision, save :: dX, dY, dZ            !各方向の刻み幅
     double precision, save :: ddX, ddY, ddZ    !各方向の刻み幅の逆数
     double precision, save :: ddX2, ddY2, ddZ2 !各方向の刻み幅の逆数の二乗
@@ -60,7 +61,7 @@ end subroutine set_grid
                 do iX = NXmin-1, NXmax
                     Vx(iX, iY, iZ) = sin((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
                     Vy(iX, iY, iZ) = cos((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
-                    Vz(iX, iY, iZ) = (X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ)
+                    Vz(iX, iY, iZ) = sin((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
                 enddo
             enddo
         enddo
@@ -76,32 +77,19 @@ end subroutine set_grid
         double precision, intent(out) :: By(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
         double precision, intent(out) :: Bz(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
         integer iX, iY, iZ
-        double precision Cx, Cy, Cz         !計算用数値
-        !---計算用数値の設定---
-        Cx = ddX / 4.0d0
-        Cy = ddY / 4.0d0
-        Cz = ddZ / 4.0d0
         !---粘性項の計算---
         do iZ = NZmin, NZmax-1
             do iY = NYmin, NYmax-1
                 do iX = NXmin, NXmax-1
-                    Bx(iX, iY, iZ) = Cx*((Vx(iX-1,iY,iZ) + Vx(iX,iY,iZ))**2 - (Vx(iX,iY,iZ) + Vx(iX+1,iY,iZ))**2) &
-                                    + Cy*((Vy(iX,iY-1,iZ) + Vy(iX+1,iY-1,iZ))*(Vx(iX,iY-1,iZ) + Vx(iX,iY,iZ)) &
-                                    - (Vy(iX,iY,iZ) + Vy(iX+1,iY,iZ))*(Vx(iX,iY,iZ) + Vx(iX,iY+1,iZ))) &
-                                    + Cz*((Vz(iX,iY,iZ-1) + Vz(iX+1,iY,iZ-1))*(Vx(iX,iY,iZ-1) + Vx(iX,iY,iZ)) &
-                                    - (Vz(iX,iY,iZ) + Vz(iX+1,iY,iZ))*(Vx(iX,iY,iZ) + Vx(iX,iY,iZ+1)))
-
-                    By(iX, iY, iZ) = Cx*((Vx(iX-1,iY,iZ) + Vx(iX-1,iY+1,iZ))*(Vy(iX-1,iY,iZ) + Vy(iX,iY,iZ)) &
-                                    - (Vx(iX,iY,iZ) + Vx(iX,iY+1,iZ))*(Vy(iX,iY,iZ) + Vy(iX+1,iY,iZ))) &
-                                    + Cy*((Vy(iX,iY-1,iZ) + Vy(iX,iY,iZ))**2 - (Vy(iX,iY,iZ) + Vy(iX,iY+1,iZ))**2) &
-                                    + Cz*((Vz(iX,iY,iZ-1) + Vz(iX,iY+1,iZ-1))*(Vy(iX,iY,iZ-1) + Vy(iX,iY,iZ)) &
-                                    - (Vz(iX,iY,iZ) + Vz(iX,iY+1,iZ))*(Vy(iX,iY,iZ) + Vy(iX,iY,iZ+1)))
-
-                    Bz(iX, iY, iZ) = Cx*((Vx(iX-1,iY,iZ) + Vx(iX-1,iY,iZ+1))*(Vz(iX-1,iY,iZ) + Vz(iX,iY,iZ)) &
-                                    - (Vx(iX,iY,iZ) + Vx(iX,iY,iZ+1))*(Vz(iX,iY,iZ) + Vz(iX+1,iY,iZ))) &
-                                    + Cy*((Vy(iX,iY-1,iZ) + Vy(iX,iY-1,iZ+1))*(Vz(iX,iY-1,iZ) + Vz(iX,iY,iZ)) &
-                                    - (Vy(iX,iY,iZ) + Vy(iX,iY,iZ+1))*(Vz(iX,iY,iZ) + Vz(iX,iY+1,iZ))) &
-                                    + Cz*((Vz(iX,iY,iZ-1) + Vz(iX,iY,iZ))**2 - (Vz(iX,iY,iZ) + Vz(iX,iY,iZ+1))**2)
+                    Bx(iX, iY, iZ) = NU*(ddX2*(Vx(iX-1,iY,iZ) - 2.0d0*Vx(iX,iY,iZ) + Vx(iX+1,iY,iZ)) &
+                                    + ddY2*(Vx(iX,iY-1,iZ) - 2.0d0*Vx(iX,iY,iZ) + Vx(iX,iY+1,iZ)) &
+                                    + ddZ2*(Vx(iX,iY,iZ-1) - 2.0d0*Vx(iX,iY,iZ) + Vx(iX,iY,iZ+1)))
+                    By(iX, iY, iZ) = NU*(ddX2*(Vy(iX-1,iY,iZ) - 2.0d0*Vy(iX,iY,iZ) + Vy(iX+1,iY,iZ)) &
+                                    + ddY2*(Vy(iX,iY-1,iZ) - 2.0d0*Vy(iX,iY,iZ) + Vy(iX,iY+1,iZ)) &
+                                    + ddZ2*(Vy(iX,iY,iZ-1) - 2.0d0*Vy(iX,iY,iZ) + Vy(iX,iY,iZ+1)))
+                    Bz(iX, iY, iZ) = NU*(ddX2*(Vz(iX-1,iY,iZ) - 2.0d0*Vz(iX,iY,iZ) + Vz(iX+1,iY,iZ)) &
+                                    + ddY2*(Vz(iX,iY-1,iZ) - 2.0d0*Vz(iX,iY,iZ) + Vz(iX,iY+1,iZ)) &
+                                    + ddZ2*(Vz(iX,iY,iZ-1) - 2.0d0*Vz(iX,iY,iZ) + Vz(iX,iY,iZ+1)))
                 enddo
             enddo
         enddo
@@ -120,26 +108,9 @@ end subroutine set_grid
         do iZ = NZmin, NZmax-1
             do iY = NYmin, NYmax-1
                 do iX = NXmin, NXmax-1
-                    Bx_th(iX, iY, iZ) = -2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - (cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        + (sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        - (X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))&
-                                        *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
-                    By_th(iX, iY, iZ) = - (cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        + (sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        + 2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        + (X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
-                    Bz_th(iX, iY, iZ) = (X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *(sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
-                                        - sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - 2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
+                    Bx_th(iX, iY, iZ) = NU*(-3.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))
+                    By_th(iX, iY, iZ) = NU*(-3.0d0*cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))
+                    Bz_th(iX, iY, iZ) = NU*(-3.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))
                 enddo
             enddo
         enddo
