@@ -1,9 +1,9 @@
 module viscosity_test
     implicit none
     double precision, parameter :: pi = acos(-1.0d0)
-    integer, parameter :: NXmin = -80, NXmax = 80     !x方向の計算領域の形状
-    integer, parameter :: NYmin = -80, NYmax = 80     !y方向の計算領域の形状
-    integer, parameter :: NZmin = -80, NZmax = 80     !z方向の計算領域の形状
+    integer, parameter :: NXmin = -160, NXmax = 160     !x方向の計算領域の形状
+    integer, parameter :: NYmin = -160, NYmax = 160     !y方向の計算領域の形状
+    integer, parameter :: NZmin = -160, NZmax = 160     !z方向の計算領域の形状
     double precision, parameter :: Xmax = 2.0d0*pi, Ymax = 2.0d0*pi, Zmax = 2.0d0*pi  !各方向の計算領域の最大値
     double precision, parameter :: NU = 1.0d0       !動粘性係数
     double precision, save :: dX, dY, dZ            !各方向の刻み幅
@@ -61,7 +61,7 @@ end subroutine set_grid
                 do iX = NXmin-1, NXmax
                     Vx(iX, iY, iZ) = sin((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
                     Vy(iX, iY, iZ) = cos((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
-                    Vz(iX, iY, iZ) = sin((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
+                    Vz(iX, iY, iZ) = (X(iX,iY,iZ) + 0.5d0*dX)**3 + (Y(iX,iY,iZ) + 0.5d0*dY)**3 + (Z(iX,iY,iZ) + 0.5d0*dZ)**3
                 enddo
             enddo
         enddo
@@ -110,7 +110,7 @@ end subroutine set_grid
                 do iX = NXmin, NXmax-1
                     Bx_th(iX, iY, iZ) = NU*(-3.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))
                     By_th(iX, iY, iZ) = NU*(-3.0d0*cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))
-                    Bz_th(iX, iY, iZ) = NU*(-3.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))
+                    Bz_th(iX, iY, iZ) = NU*6.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
                 enddo
             enddo
         enddo
