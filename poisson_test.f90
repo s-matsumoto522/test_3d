@@ -1,9 +1,9 @@
 module poisson_test
     implicit none
     double precision, parameter :: pi = acos(-1.0d0)
-    integer, parameter :: NXmin = -40, NXmax = 40     !x方向の計算領域の形状
-    integer, parameter :: NYmin = -40, NYmax = 40     !y方向の計算領域の形状
-    integer, parameter :: NZmin = -40, NZmax = 40     !z方向の計算領域の形状
+    integer, parameter :: NXmin = -80, NXmax = 80     !x方向の計算領域の形状
+    integer, parameter :: NYmin = -80, NYmax = 80     !y方向の計算領域の形状
+    integer, parameter :: NZmin = -80, NZmax = 80     !z方向の計算領域の形状
     double precision, parameter :: Xmax = 2.0d0*pi, Ymax = 2.0d0*pi, Zmax = 2.0d0*pi  !各方向の計算領域の最大値
     double precision, parameter :: NU = 1.0d0       !動粘性係数
     double precision, parameter :: dt = 1.0d-2      !時間の刻み幅
