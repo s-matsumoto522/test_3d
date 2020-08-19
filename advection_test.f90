@@ -4,7 +4,7 @@ module advection_test
     integer, parameter :: NXmin = -80, NXmax = 80     !x方向の計算領域の形状
     integer, parameter :: NYmin = -80, NYmax = 80     !y方向の計算領域の形状
     integer, parameter :: NZmin = -80, NZmax = 80     !z方向の計算領域の形状
-    double precision, parameter :: Xmax = 2.0d0*pi, Ymax = 2.0d0*pi, Zmax = 2.0d0*pi  !各方向の計算領域の最大値
+    double precision, parameter :: Xmax = 0.5d0*pi, Ymax = 0.5d0*pi, Zmax = 0.5d0*pi  !各方向の計算領域の最大値
     double precision, save :: dX, dY, dZ            !各方向の刻み幅
     double precision, save :: ddX, ddY, ddZ    !各方向の刻み幅の逆数
     double precision, save :: ddX2, ddY2, ddZ2 !各方向の刻み幅の逆数の二乗
@@ -58,9 +58,9 @@ end subroutine set_grid
         do iZ = NZmin-1, NZmax
             do iY = NYmin-1, NYmax
                 do iX = NXmin-1, NXmax
-                    Vx(iX, iY, iZ) = sin((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
-                    Vy(iX, iY, iZ) = cos((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
-                    Vz(iX, iY, iZ) = (X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ)
+                    Vx(iX,iY,iZ) = sin((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
+                    Vy(iX,iY,iZ) = cos((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ))
+                    Vz(iX,iY,iZ) = sin(2.0d0*((X(iX,iY,iZ) + 0.5d0*dX) + (Y(iX,iY,iZ) + 0.5d0*dY) + (Z(iX,iY,iZ) + 0.5d0*dZ)))
                 enddo
             enddo
         enddo
@@ -120,26 +120,32 @@ end subroutine set_grid
         do iZ = NZmin, NZmax-1
             do iY = NYmin, NYmax-1
                 do iX = NXmin, NXmax-1
-                    Ax_th(iX, iY, iZ) = -2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - (cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        + (sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        - (X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))&
-                                        *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
-                    Ay_th(iX, iY, iZ) = - (cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        + (sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
-                                        + 2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        + (X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
-                    Az_th(iX, iY, iZ) = (X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        *(sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
-                                        - sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
-                                        - 2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))
+                    Ax_th(iX,iY,iZ) = -(2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    + (cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
+                                    - (sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
+                                    + cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *sin(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    + 2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *cos(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))))
+                    Ay_th(iX,iY,iZ) = -((cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
+                                    - (sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)))**2 &
+                                    - 2.0d0*cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    - sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *sin(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    + 2.0d0*cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *cos(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))))
+                    Az_th(iX,iY,iZ) = -(cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *sin(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    + 2.0d0*sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *cos(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    - sin(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *sin(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    + 2.0d0*cos(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ)) &
+                                    *cos(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    + 4.0d0*sin(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))) &
+                                    *cos(2.0d0*(X(iX,iY,iZ) + Y(iX,iY,iZ) + Z(iX,iY,iZ))))
                 enddo
             enddo
         enddo
@@ -156,48 +162,21 @@ end subroutine set_grid
         double precision, intent(in) :: Az_th(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
         double precision, intent(out) :: errorx, errory, errorz
         integer iX, iY, iZ, NX, NY, NZ
-        double precision Ax_num(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
-        double precision Ay_num(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
-        double precision Az_num(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
-        double precision Cx(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1), Cx_ave
-        double precision Cy(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1), Cy_ave
-        double precision Cz(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1), Cz_ave
         double precision Erx(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
         double precision Ery(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
         double precision Erz(NXmin:NXmax-1, NYmin:NYmax-1, NZmin:NZmax-1)
         errorx = 0.0d0
         errory = 0.0d0
         errorz = 0.0d0
-        Cx_ave = 0.0d0
-        Cy_ave = 0.0d0
-        Cz_ave = 0.0d0
         NX = NXmax - NXmin + 1
         NY = NYmax - NYmin + 1
         NZ = NZmax - NZmin + 1
         do iZ = NZmin, NZmax-1
             do iY = NYmin, NYmax-1
                 do iX = NXmin, NXmax-1
-                    Cx(iX, iY, iZ) = Ax(iX, iY, iZ) - Ax_th(iX, iY, iZ)
-                    Cy(iX, iY, iZ) = Ay(iX, iY, iZ) - Ay_th(iX, iY, iZ)
-                    Cz(iX, iY, iZ) = Az(iX, iY, iZ) - Az_th(iX, iY, iZ)
-                    Cx_ave = Cx_ave + Cx(iX, iY, iZ)
-                    Cy_ave = Cy_ave + Cy(iX, iY, iZ)
-                    Cz_ave = Cz_ave + Cz(iX, iY, iZ)
-                enddo
-            enddo
-        enddo
-        Cx_ave = Cx_ave / (NX*NY*NZ)
-        Cy_ave = Cy_ave / (NX*NY*NZ)
-        Cz_ave = Cz_ave / (NX*NY*NZ)
-        do iZ = NZmin, NZmax-1
-            do iY = NYmin, NYmax-1
-                do iX = NXmin, NXmax-1
-                    Ax_num(iX, iY, iZ) = Ax(iX, iY, iZ) - Cx_ave
-                    Ay_num(iX, iY, iZ) = Ay(iX, iY, iZ) - Cy_ave
-                    Az_num(iX, iY, iZ) = Az(iX, iY, iZ) - Cz_ave
-                    Erx(iX, iY, iZ) = Ax_num(iX, iY, iZ) - Ax_th(iX, iY, iZ)
-                    Ery(iX, iY, iZ) = Ay_num(iX, iY, iZ) - Ay_th(iX, iY, iZ)
-                    Erz(iX, iY, iZ) = Az_num(iX, iY, iZ) - Az_th(iX, iY, iZ)
+                    Erx(iX, iY, iZ) = Ax(iX, iY, iZ) - Ax_th(iX, iY, iZ)
+                    Ery(iX, iY, iZ) = Ay(iX, iY, iZ) - Ay_th(iX, iY, iZ)
+                    Erz(iX, iY, iZ) = Az(iX, iY, iZ) - Az_th(iX, iY, iZ)
                     errorx = errorx + Erx(iX, iY, iZ)**2
                     errory = errory + Ery(iX, iY, iZ)**2
                     errorz = errorz + Erz(iX, iY, iZ)**2
@@ -235,5 +214,3 @@ program main
     write(11, *) dX, dY, dZ, errorx, errory, errorz
     close(11)
 end program main
-
-
