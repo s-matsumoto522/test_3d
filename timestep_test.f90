@@ -7,7 +7,7 @@ module timestep_test
     integer, parameter :: Nstep = 500             !総ステップ数
     double precision, parameter :: Xmax = 2.0d0*pi, Ymax = 2.0d0*pi, Zmax = 2.0d0*pi  !各方向の計算領域の最大値
     double precision, parameter :: NU = 1.0d0       !動粘性係数
-    double precision, parameter :: dt = 0.25d0      !時間の刻み幅
+    double precision, parameter :: dt = 1.0d-3/16.0d0      !時間の刻み幅
     integer, save :: Ng                             !格子点数
     double precision, save :: ddt                   !時間の刻み幅の逆数
     double precision, save :: dX, dY, dZ            !各方向の刻み幅
@@ -36,9 +36,9 @@ program main
         R2 = exp(-dt*dble(istep))
         call cal_timeint(V, R1, R2)
     enddo
-    error = abs(V - (1 - exp(-dt*dble(Nstep))))
-    write(*, *) V, (1-exp(-dt*dble(istep)))
-    open(11, file = 'chk_timestep_precision', position='append')
+    error = abs(V - (1.0d0 - exp(-dt*dble(Nstep))))
+    write(*, *) V, (1.0d0 - exp(-dt*dble(istep)))
+    open(11, file = 'chk_timestep_precision.dat', position='append')
     write(11, *) dt, error
     close(11)
 end program main
