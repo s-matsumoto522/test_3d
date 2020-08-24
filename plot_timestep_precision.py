@@ -23,14 +23,14 @@ fig = plt.figure()
 # 2. Axesのインスタンスを生成
 ax = fig.add_subplot(111)
 # 3. データを渡してプロット
-line1, = ax.plot(x, y, label = 'poisson_precision', marker='.')
+line1, = ax.plot(x, y, label = 'timestep precision', marker='.')
 # 4. グラフタイトル, ラベル付け等
-ax.set_xlim(2.0*np.pi/80, 2.0*np.pi/10)
+ax.set_xlim(6.25E-005, 1.00E-003)
 ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlabel("dt")
-ax.text(0.1, 0.15, 'slope : 1.922')
-ax.set_title("check the poisson precision")
+ax.text(0.0001, 0.0000225, 'slope : 1.922')
+ax.set_title("check the timestep precision")
 ax.legend()
 # 5. グラフを描画
 plt.grid(which="both")
